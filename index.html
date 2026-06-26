@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Relocation AT→DE</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--p:#E8E9E3;--c:#F5F4EE;--i:#16241F;--is:#54635C;--ln:#D2D2C6;--ac:#0E6E5C;--as:#D6E7E1;
+--al:#B4541F;--als:#F2DFD2;--ur:#B02A2A;--urs:#F3D9D6;--y:#2F4D7A;--ys:#DEE5F1;--s:#7A3A72;--ss:#EEDFEC}
+*{box-sizing:border-box}body{margin:0;background:var(--p);color:var(--i);font-family:Inter,system-ui,sans-serif;line-height:1.5;-webkit-font-smoothing:antialiased}
+.w{max-width:760px;margin:0 auto;padding:0 16px 80px}
+header{position:sticky;top:0;z-index:20;background:rgba(232,233,227,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--ln);margin:0 -16px 18px;padding:12px 16px}
+.ey{font-family:"Space Mono",monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--is)}
+h1{font-family:Fraunces,serif;font-weight:500;font-size:clamp(21px,5vw,28px);margin:2px 0 10px;letter-spacing:-.01em}
+.route{display:flex;align-items:center;gap:8px}
+.pin{font-family:"Space Mono",monospace;font-weight:700;font-size:12px;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;border:1.5px solid var(--i);background:var(--c)}
+.pin.de{border-color:var(--ac);color:var(--ac)}
+.trk{position:relative;flex:1;height:7px;border-radius:99px;background:var(--ln);overflow:hidden}
+.fl{position:absolute;inset:0 auto 0 0;width:0;background:linear-gradient(90deg,var(--i),var(--ac));border-radius:99px;transition:width .5s}
+.pct{font-family:"Space Mono",monospace;font-weight:700;font-size:12px;min-width:38px;text-align:right}
+.ctrl{display:flex;align-items:center;gap:6px;margin-top:9px;flex-wrap:wrap}
+.seg{display:inline-flex;background:var(--c);border:1px solid var(--ln);border-radius:99px;padding:2px}
+.seg button{font-family:"Space Mono",monospace;font-size:10px;letter-spacing:.04em;border:none;background:none;color:var(--is);padding:4px 11px;border-radius:99px;cursor:pointer}
+.seg button.on{background:var(--i);color:#fff}
+.idbadge{font-family:"Space Mono",monospace;font-size:9px;font-weight:700;padding:3px 9px;border-radius:99px;letter-spacing:.04em}
+.sm{font-family:"Space Mono",monospace;font-size:10px;background:none;border:1px solid var(--ln);border-radius:99px;padding:4px 10px;color:var(--is);cursor:pointer}
+.sm:hover{border-color:var(--is);color:var(--i)}
+
+.sync-bar{display:flex;align-items:center;gap:6px;background:var(--c);border:1px solid var(--ln);border-radius:10px;padding:8px 12px;margin-bottom:14px;flex-wrap:wrap}
+.sync-bar .label{font-family:"Space Mono",monospace;font-size:10px;color:var(--is);text-transform:uppercase;letter-spacing:.08em}
+.sync-bar button{font-family:"Space Mono",monospace;font-size:10px;border:1px solid var(--ln);border-radius:99px;padding:4px 12px;background:none;color:var(--is);cursor:pointer}
+.sync-bar button.ok{background:var(--as);color:var(--ac);border-color:var(--ac)}
+.imp-area{width:100%;margin-top:6px;display:flex;gap:6px}
+.imp-area input{flex:1;padding:6px 10px;border-radius:8px;border:1px solid var(--ln);font-family:"Space Mono",monospace;font-size:11px;background:#fff}
+.imp-area button{padding:6px 14px;border-radius:8px;border:1px solid var(--ac);background:var(--as);color:var(--ac);font-family:"Space Mono",monospace;font-size:11px;font-weight:700;cursor:pointer}
+
+.bn{border-radius:10px;padding:10px 13px;margin:0 0 12px;font-size:12px;line-height:1.5;border-left:3px solid}
+.bn b{font-weight:600}
+.cats{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px}
+.cat-tag{font-family:"Space Mono",monospace;font-size:9px;font-weight:700;letter-spacing:.04em;padding:2px 8px;border-radius:99px;text-transform:uppercase;cursor:pointer;border:1.5px solid transparent}
+.cat-tag.on{border-color:currentColor}
+.hint-row{font-size:11px;color:var(--is);margin-bottom:20px}
+
+.dls{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:22px}
+.dl{background:var(--c);border:1px solid var(--ln);border-left:3px solid var(--al);border-radius:8px;padding:7px 9px}
+.dl.u{border-left-color:var(--ur)}
+.dl b{font-family:Fraunces,serif;font-weight:500;display:block;font-size:12px}
+.dl span{font-family:"Space Mono",monospace;font-size:10px;color:var(--al)}
+.dl.u span{color:var(--ur)}
+
+.ph{position:relative;padding-left:26px;margin-bottom:12px}
+.ph::before{content:"";position:absolute;left:6px;top:28px;bottom:-12px;width:2px;background:var(--ln)}
+.ph:last-child::before{display:none}
+.nd{position:absolute;left:0;top:15px;width:14px;height:14px;border-radius:50%;background:var(--c);border:2px solid var(--is);transition:.3s}
+.ph.done .nd{background:var(--ac);border-color:var(--ac)}
+.ph.hid{display:none}
+.phd{width:100%;text-align:left;cursor:pointer;background:var(--c);border:1px solid var(--ln);border-radius:11px;padding:10px 12px;display:flex;align-items:center;gap:10px;box-shadow:0 1px 2px rgba(22,36,31,.05),0 6px 18px rgba(22,36,31,.04)}
+.phd:hover{border-color:#c4c4b6}
+.bd{overflow:visible}
+.ph.col .bd{height:0!important;overflow:hidden}
+.gl{font-family:"Space Mono",monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--is);margin:14px 0 4px 4px}
+.gl.hid,.tk.hid{display:none}
+
+.tk{background:var(--c);border:1px solid var(--ln);border-radius:10px;margin-top:8px;overflow:hidden}
+.tk.fg{border-left:3px solid var(--ur)}
+.tkrow{display:flex;gap:10px;align-items:flex-start;padding:11px 12px}
+.bx{flex:0 0 18px;width:18px;height:18px;margin-top:1px;border-radius:5px;border:2px solid var(--is);background:#fff;display:grid;place-items:center;cursor:pointer;transition:.2s}
+.bx svg{width:11px;height:11px;stroke:#fff;stroke-width:3;fill:none;stroke-dasharray:18;stroke-dashoffset:18;transition:stroke-dashoffset .25s}
+.tk.dn .bx{background:var(--ac);border-color:var(--ac)}
+.tk.dn .bx svg{stroke-dashoffset:0}
+.tmid{flex:1;min-width:0;cursor:pointer}
+.ttl{font-size:13.5px;font-weight:600;overflow-wrap:break-word}
+.tk.dn .ttl{color:var(--is);text-decoration:line-through;text-decoration-color:var(--ln)}
+.tags{margin-top:3px;display:flex;gap:4px;flex-wrap:wrap;align-items:center}
+.pl{font-family:"Space Mono",monospace;font-size:8.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:1px 6px;border-radius:99px}
+.pl.u{background:var(--ys);color:var(--y)}.pl.sv{background:var(--ss);color:var(--s)}
+.ct{font-family:"Space Mono",monospace;font-size:8px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:1px 6px;border-radius:99px}
+.bdg{font-family:"Space Mono",monospace;font-size:9px;font-weight:700;padding:1px 7px;border-radius:99px;white-space:nowrap}
+.chk{font-family:"Space Mono",monospace;font-size:9px;display:inline-flex;align-items:center;gap:3px}
+.caret{flex:0 0 16px;width:16px;height:16px;margin-top:2px;color:var(--is);cursor:pointer;transition:transform .25s}
+.tk.open .caret{transform:rotate(90deg)}
+.det{max-height:0;overflow:hidden;transition:max-height .3s ease;border-top:0 solid var(--ln)}
+.tk.open .det{max-height:600px;border-top:1px solid var(--ln)}
+.det-in{padding:11px 13px 12px 40px}
+.det-in p{margin:0 0 7px;font-size:12.5px;color:var(--i);line-height:1.5}
+.det-in p:last-child{margin-bottom:0}
+.det-in .lbl{font-family:"Space Mono",monospace;font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--is);display:block;margin-bottom:2px}
+.det-in .warn{color:var(--al)}
+.det-in .insight{background:#fff;border:1px solid var(--ln);border-left:3px solid var(--ac);border-radius:8px;padding:8px 11px;margin-top:8px}
+.det-in .insight .lbl{color:var(--ac)}
+
+.alog{margin-top:20px;background:var(--c);border:1px solid var(--ln);border-radius:11px;overflow:hidden}
+.alog button.hdr{width:100%;text-align:left;cursor:pointer;background:none;border:none;padding:11px 14px;display:flex;align-items:center;gap:8px;color:var(--i)}
+.alog .rows{padding:0 14px 10px}
+.alog .row{display:flex;align-items:center;gap:6px;padding:5px 0;border-top:1px solid var(--ln);font-size:11px}
+.alog .row:first-child{border-top:none}
+
+.pick{position:fixed;inset:0;background:var(--p);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;padding:24px;z-index:100}
+.pick h2{font-family:Fraunces,serif;font-weight:500;font-size:26px;margin:0}
+.pick p{color:var(--is);font-size:13px;margin:0;text-align:center;max-width:300px}
+.pick .btns{display:flex;gap:10px}
+.pick .btn{font-size:14px;font-weight:600;border:2px solid;border-radius:12px;padding:14px 24px;cursor:pointer}
+
+.pagenav{display:flex;gap:6px;margin-top:10px}
+.pagenav button{flex:1;font-family:"Space Mono",monospace;font-size:11px;letter-spacing:.04em;border:1px solid var(--ln);background:var(--c);color:var(--is);padding:7px;border-radius:9px;cursor:pointer}
+.pagenav button.on{background:var(--i);color:#fff;border-color:var(--i)}
+.page.hide{display:none}
+
+.uz-sec{margin-bottom:22px}
+.uz-h{display:flex;align-items:center;gap:8px;margin:0 0 8px}
+.uz-h .ic{width:26px;height:26px;border-radius:7px;display:grid;place-items:center;flex:0 0 26px}
+.uz-h h3{font-family:Fraunces,serif;font-weight:500;font-size:17px;margin:0;flex:1}
+.uz-h .cnt{font-family:"Space Mono",monospace;font-size:11px;color:var(--is)}
+.uz-li{display:flex;align-items:center;gap:10px;padding:9px 12px;margin-top:6px;background:var(--c);border:1px solid var(--ln);border-radius:9px}
+.uz-li .ck{flex:0 0 18px;width:18px;height:18px;border-radius:5px;border:2px solid var(--is);background:#fff;display:grid;place-items:center;cursor:pointer;transition:.2s}
+.uz-li .ck svg{width:11px;height:11px;stroke:#fff;stroke-width:3;fill:none;stroke-dasharray:18;stroke-dashoffset:18;transition:.25s}
+.uz-li.dn .ck{background:var(--ac);border-color:var(--ac)}
+.uz-li.dn .ck svg{stroke-dashoffset:0}
+.uz-li .nm{flex:1;font-size:13.5px;min-width:0;overflow-wrap:break-word}
+.uz-li.dn .nm{color:var(--is);text-decoration:line-through;text-decoration-color:var(--ln)}
+.uz-li .del{flex:0 0 auto;background:none;border:none;color:var(--is);cursor:pointer;font-size:16px;line-height:1;opacity:.5;padding:2px 4px}
+.uz-li .del:hover{opacity:1;color:var(--ur)}
+.uz-add{display:flex;gap:6px;margin-top:8px}
+.uz-add input{flex:1;padding:8px 11px;border-radius:8px;border:1px solid var(--ln);font-size:13px;background:#fff}
+.uz-add button{padding:8px 14px;border-radius:8px;border:1px solid var(--i);background:var(--i);color:#fff;font-size:13px;font-weight:600;cursor:pointer}
+.uz-note{font-size:11px;color:var(--is);background:var(--c);border:1px solid var(--ln);border-radius:9px;padding:10px 12px;margin-bottom:18px;line-height:1.5}
+
+footer{margin-top:28px;font-size:11px;color:var(--is);line-height:1.5;border-top:1px solid var(--ln);padding-top:14px}
+@media(max-width:480px){.dls{grid-template-columns:1fr 1fr}.det-in{padding-left:13px}}
+</style>
+</head>
+<body>
+<div class="w">
+  <div class="pick" id="pick">
+    <div class="ey">Relocation AT → DE</div>
+    <h2>Who are you?</h2>
+    <p>So we can track who checked what.</p>
+    <div class="btns">
+      <button class="btn" style="border-color:var(--y);background:var(--ys);color:var(--y)" onclick="pickMe('You')">That's me</button>
+      <button class="btn" style="border-color:var(--s);background:var(--ss);color:var(--s)" onclick="pickMe('Silvia')">I'm Silvia</button>
+    </div>
+  </div>
+
+  <header>
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div class="ey">Relocation assistant</div>
+      <div style="display:flex;align-items:center;gap:6px">
+        <button class="sm" style="font-size:8px;padding:2px 8px;border:none" onclick="changeIdentity()">switch</button>
+        <div class="idbadge" id="idbadge"></div>
+      </div>
+    </div>
+    <h1>Austria → Germany</h1>
+    <div class="route">
+      <div class="pin">AT</div><div class="trk"><div class="fl" id="fl"></div></div><div class="pin de">DE</div>
+      <div class="pct" id="pct">0%</div>
+    </div>
+    <div style="font-size:11px;color:var(--is);margin-top:5px" id="status"></div>
+    <div class="ctrl">
+      <div class="seg" id="seg">
+        <button class="on" data-f="all">All</button><button data-f="you">You</button><button data-f="silvia">Silvia</button>
+      </div>
+      <button class="sm" id="expandAll" style="margin-left:auto" onclick="toggleAll()">Expand all</button>
+      <button class="sm" onclick="doReset()">Reset</button>
+    </div>
+    <div class="pagenav">
+      <button class="on" data-page="checklist" onclick="showPage('checklist')">Checklist</button>
+      <button data-page="umzug" onclick="showPage('umzug')">Umzug — furniture</button>
+    </div>
+  </header>
+
+  <div class="page" id="page-checklist">
+  <div class="sync-bar">
+    <span class="label">Cloud</span>
+    <span id="syncDot" style="font-family:'Space Mono',monospace;font-size:10px;color:var(--is)">offline</span>
+    <button id="syncSettingsBtn" style="margin-left:auto" onclick="toggleSync()">Setup sync</button>
+    <div class="imp-area" id="syncArea" style="display:none">
+      <input id="urlInput" placeholder="Paste your Web App URL"/>
+      <button onclick="connectSync()">Connect</button>
+    </div>
+  </div>
+
+  <div class="bn" style="background:var(--urs);border-color:var(--ur);color:#5e1b1b"><b>Most urgent: Austrian lease.</b> 3-month notice by ~30 Jun; 1-month by ~31 Aug.</div>
+  <div class="bn" style="background:#EEF0F4;border-color:var(--y)"><b>Two regimes.</b> You: full move to DE. Silvia: Grenzgängerin (tax DE, social security AT).</div>
+  <div class="bn" style="background:var(--as);border-color:var(--ac)"><b>September = logistics only.</b> Residence stays AT until 1 Oct.</div>
+
+  <div class="cats" id="cats"></div>
+  <div class="hint-row">Tap a category to filter · tap any item to open its details</div>
+
+  <div class="dls">
+    <div class="dl u"><b>Lease notice</b><span>check now</span></div>
+    <div class="dl"><b>KTM docs</b><span>by 30 Sep</span></div>
+    <div class="dl"><b>Abmeldung AT</b><span>by Fri 2 Oct</span></div>
+    <div class="dl"><b>Anmeldung DE</b><span>by 15 Oct</span></div>
+    <div class="dl"><b>AIRE</b><span>by ~30 Dec</span></div>
+    <div class="dl"><b>Silvia S1+KV</b><span>by ~31 Dec</span></div>
+  </div>
+
+  <main id="main"></main>
+
+  <div class="alog" id="alog" style="display:none">
+    <button class="hdr" onclick="toggleLog()">
+      <span style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;flex:1">Recent activity</span>
+      <span style="font-family:'Space Mono',monospace;font-size:10px;color:var(--is)" id="acount"></span>
+      <svg width="12" viewBox="0 0 24 24" fill="none" stroke="var(--is)" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+    </button>
+    <div class="rows" id="arows" style="display:none"></div>
+  </div>
+  </div><!-- /page-checklist -->
+
+  <div class="page hide" id="page-umzug">
+    <div class="uz-note"><b>Moving plan.</b> Add or remove items freely (tap × to delete). The van for the 4–5 Sep weekend lives in the main checklist (Phase 2). Everything auto-syncs once cloud sync is connected.</div>
+    <div id="umzug"></div>
+  </div>
+
+  <footer>Progress saved in your browser. Use Export/Import to sync with the other person. Not tax or legal advice.</footer>
+</div>
+
+<script>
+const CATS={
+  home:{l:"Home",fg:"#8B6914",bg:"#F5EDD6"},work:{l:"Work",fg:"#2F5080",bg:"#DEE5F1"},
+  bank:{l:"Bank",fg:"#1B6B4A",bg:"#D6EDE2"},dog:{l:"Dog",fg:"#9A5B1F",bg:"#F5E6D2"},
+  auto:{l:"Auto",fg:"#555",bg:"#E8E8E8"},admin:{l:"Admin",fg:"#6B3FA0",bg:"#E8DDF5"},
+  ins:{l:"Insurance",fg:"#1B6B6B",bg:"#D6EDEC"},util:{l:"Utilities",fg:"#7A6A14",bg:"#F0EAD0"},
+  tax:{l:"Tax",fg:"#3D5A1B",bg:"#E2EDD6"}
+};
+
+// t=title (short)  s=what to do  w=watch out (warning)  x=insight (why/extra)
+const DATA=[
+{num:"Phase 1",when:"Now → summer",sub:"preparation",tasks:[
+  {who:"both",cat:"home",t:"Find a place in Rosenheim",s:"Start the search now — flat-hunting is the long pole.",x:"Everything downstream depends on this: no flat means no Wohnungsgeberbestätigung, no Anmeldung, no Steuer-ID, no German bank account. Begin even before other steps."},
+  {who:"both",cat:"home",fg:1,now:1,badge:"act now",t:"Give notice on the Austrian lease",s:"Check the notice period and send written termination.",w:"To vacate by ~30 Sep: 3-month notice → by ~30 Jun; 1-month notice → by ~31 Aug.",x:"Austrian tenant notice is often 1–3 months to a month-end and must be in writing. Agree a hand-over date and do a photo hand-over protocol to protect the €3,000 deposit."},
+  {who:"both",cat:"ins",t:"Household insurance — confirm terms",s:"Check the notice period and renewal date; plan cancellation.",w:"Ordinary notice is typically 1–3 months before the annual renewal (Hauptfälligkeit).",x:"Moving abroad / giving up the flat usually triggers a special cancellation right (Wegfall des Risikos), letting you end it at move-out even outside the normal window. Notify the insurer with your move-out date."},
+  {who:"both",cat:"util",badge:"check now",t:"HoT internet — confirm Kündigungsfrist",s:"Read the contract; note the cancellation deadline.",w:"Usually 1 month to end of month → cancel by end of Aug for end of Sep. Longer notice may mean acting in July.",x:"Cancel via email to info@hot.at with your Kundennummer/Mobilfunknummer. Keep the confirmation email."},
+  {who:"both",cat:"util",badge:"check now",t:"Salzburg AG — note account details",s:"Check tariff terms; write down customer & meter numbers.",x:"Moving abroad gives a special 2-week termination right regardless of any Bindungsfrist, so you can't be trapped. But note your Kundennummer, Zählpunkt and Zählernummer now — you'll need them for the move-out cancellation in Phase 3, plus check if any deposit is recoverable."},
+  {who:"both",cat:"home",badge:"check now",t:"Review all other AT contracts",s:"List every subscription with a notice period and plan dates.",w:"Anything with 3+ months notice may already be due in June.",x:"Gym, streaming, magazines, memberships, mobile add-ons. Make a quick list with each notice period and target cancellation date so nothing auto-renews after you've left."},
+  {who:"you",cat:"bank",t:"Open a German bank account",s:"EU neobank with Italian ID, or a traditional bank later.",x:"You need a German IBAN for your first Hero TCG salary. A neobank (e.g. N26) opens with your Italian ID before you even have an address; a traditional bank usually wants the Anmeldung + contract first. Silvia can keep her Austrian account — her salary stays Austrian."},
+  {who:"you",cat:"ins",t:"Austrian life insurance — review",s:"Ask for surrender value, penalties, and cross-border options.",x:"Decide whether to keep it as a German resident or surrender (Rückkauf). There are tax and contractual implications either way — this is a personal financial decision, best weighed with the actual contract figures, not a default."},
+  {who:"silvia",cat:"tax",t:"Confirm frontier-worker status",s:"Austrian income will be taxed in Germany.",w:"Keep it by working ≤45 days/yr (or ≤20%) outside the 30 km border zone. Home-office days don't count.",x:"Since 2024 the AT–DE treaty taxes a Grenzgänger in the country of residence (Germany) if both home and workplace are within 30 km of the border. Track days spent working outside the zone (business trips); above the limit, taxation reverts to Austria."}
+]},
+{num:"Phase 2",when:"Aug / Sep",sub:"final months at KTM",tasks:[
+  {g:"Documents from KTM",who:"you"},
+  {who:"you",cat:"work",t:"Reference letter (Arbeitszeugnis)",s:"Request a qualified written reference.",x:"Ask early — references take time and are easier to get while you're still employed and on good terms."},
+  {who:"you",cat:"work",t:"Final payslips + annual statement (L16)",s:"Collect all payslips and the Jahreslohnzettel.",x:"The L16 is the key document for your Austrian tax return (ANV) next year and proves Austrian-taxed income for the split year."},
+  {who:"you",cat:"work",t:"End-of-employment confirmation",s:"Get written confirmation of the end date.",x:"Useful for both tax offices and to confirm your ÖGK coverage end date."},
+  {who:"you",cat:"bank",t:"Vorsorgekasse details",s:"Record the fund name + Abfertigung Neu account number.",x:"You can't cash this out (you move within the EU and start work immediately), so the capital stays invested and follows you — just keep the account reference for the future. Details are usually on the Dienstzettel."},
+  {who:"you",cat:"work",t:"ÖGK de-registration confirmation",s:"Employer does it — get the cessation date.",x:"Marks the end of your Austrian statutory health cover, right before you join the German scheme via Hero TCG."},
+  {who:"you",cat:"work",t:"Leave settlement (Urlaubsabrechnung)",s:"Settle any remaining holiday.",x:"Unused leave is paid out or must be taken before your last day — clarify with HR."},
+  {g:"Silvia — keeps working in AT",who:"silvia"},
+  {who:"silvia",cat:"work",t:"Tell employer about the move",s:"Notify the address change to Rosenheim.",x:"Needed for correct payroll and to set up the frontier-worker withholding handling from October."},
+  {who:"silvia",cat:"tax",t:"Prepare the Grenzgänger procedure",s:"Agree with the employer how October's switch works.",x:"From October you'll hand over a German residence certificate so Austria stops withholding Lohnsteuer. The concrete paperwork happens after the Anmeldung — see Phase 4. Flagging it now avoids a payroll scramble."},
+  {who:"silvia",cat:"ins",t:"Austrian social security continues",s:"No action — ÖGK, pension, Vorsorgekasse all carry on.",w:"Significant home-office from Rosenheim could shift social security to Germany.",x:"Because you work in Austria, you stay in the Austrian system (lex loci laboris). If you do meaningful home-office, there's an EU framework exemption (up to ~50%) to apply for to keep Austrian coverage."},
+  {g:"Contracts, mail & standing orders",who:"both"},
+  {who:"both",cat:"admin",badge:"from 1 Oct",t:"Set up mail forwarding",s:"Österreichische Post → German address from 01.10.2026.",x:"International letter forwarding (parcels are domestic only). ~€17–23 per 3 months, up to 1 year, activates in ~3 working days. Keep it 6–12 months as a safety net while you update senders directly."},
+  {who:"both",cat:"bank",badge:"29 Aug – 27 Sep",t:"Cancel the rent standing order",s:"Stop the Dauerauftrag at the right moment.",w:"Cancel AFTER the 28 Aug payment (pays Sep) and BEFORE 28 Sep (would pay Oct).",x:"Rent auto-pays on the 28th for the next month. Each of you must cancel your half separately. Safest: cancel immediately after confirming the 28 Aug payment cleared, or set the Dauerauftrag end-date to 28 Aug."},
+  {who:"both",cat:"util",t:"Send the HoT cancellation",s:"If not already done in Phase 1.",x:"Email info@hot.at with your Kundennummer; cancel by end of Aug for an end-of-Sep termination."},
+  {who:"both",cat:"home",badge:"4–5 Sep",t:"Book the moving van",s:"Rent a transporter for the 4–5 Sep weekend.",w:"Book early — September weekends and one-way AT→DE rentals get scarce.",x:"You're moving boxes across the 4–5 Sep weekend (and following weekends). Decide one-way (drop in Germany) vs round-trip, check whether the rental allows cross-border AT→DE, and confirm you have the right licence class for the van size. See the Umzug page for what's going in it."},
+  {g:"To arrange (you)",who:"you"},
+  {who:"you",cat:"bank",t:"Keep the Austrian account open",s:"Don't close it yet.",x:"You'll still need it for the final salary, any settlements, the Austrian tax refund and the life insurance. Close it later (Phase 5). Silvia keeps hers indefinitely."},
+  {who:"both",cat:"auto",t:"Plan the car re-registration",s:"If the car is Austrian-plated.",x:"It must be re-registered in Germany after the move — in Rosenheim this can be done alongside the Anmeldung. Foreigners moving from abroad register at the Bürgeramt, not the Kfz office."}
+]},
+{num:"Phase 3",when:"Late Sep → 1 Oct",sub:"change of residence",tasks:[
+  {who:"you",cat:"work",t:"Last day at KTM (30 Sep 2026)",s:"Confirm you've received every document.",x:"Cross-check against the Phase 2 document list before you lose easy access to HR."},
+  {who:"both",cat:"admin",badge:"by Fri 2 Oct",t:"Abmeldung in Austria",s:"Deregister at the Meldeamt when you leave the flat.",w:"4 Oct is a Sunday → do it by Fri 2 Oct. The 3-day window runs from actually giving up the home.",x:"This is mandatory and doesn't happen automatically from the German registration. Keep each Abmeldebestätigung — it's your evidence of ending Austrian residence (and tax residency), and it auto-ends the ORF-Beitrag."},
+  {who:"you",cat:"tax",t:"Notify Finanzamt of Wegzug",s:"Report your departure date (1 Oct 2026).",x:"From the Wegzug, Austria only taxes Austrian-source income. The clean 30 Sep / 1 Oct split keeps KTM income in Austria and German income in Germany."},
+  {g:"Close Austrian utilities",who:"both"},
+  {who:"both",cat:"util",badge:"2-wk notice",t:"Cancel electricity (Salzburg AG)",s:"Deregister with move-out date + final meter reading.",x:"Use the customer/meter numbers noted in Phase 1. Moving abroad gives a special 2-week termination right. Provide a German IBAN for any credit balance (final bill ~6 weeks)."},
+  {who:"both",cat:"util",t:"End the ORF contribution",s:"Confirm it stops after the Abmeldung.",x:"The ORF-Beitrag is tied to your main residence in the central register, so the Abmeldung ends it automatically. If it doesn't, notify the OBS; cancel the SEPA mandate after the final settlement."},
+  {who:"both",cat:"home",t:"Hand-over & deposit (€3,000)",s:"Photo protocol + German IBAN to the landlord.",x:"Get written confirmation of the deposit amount and return timeline. Keep the protocol and photos — they're your evidence if the refund is delayed or disputed."},
+  {who:"both",cat:"dog",t:"Deregister the dog in Austria",s:"Cancel the dog tax; return the Hundemarke.",x:"If you don't actively deregister at the municipal Abgabenbehörde, the tax keeps running. Ask for written confirmation and any pro-rata refund for the rest of the year."}
+]},
+{num:"Phase 4",when:"1 Oct + 2 weeks",sub:"arrival in Germany",tasks:[
+  {who:"you",cat:"work",t:"Start at Hero TCG (1 Oct 2026)",s:"First working day + first night in Germany."},
+  {who:"both",cat:"admin",badge:"by 15 Oct",t:"Anmeldung in Rosenheim",s:"Register as main residence within 2 weeks.",w:"Book the Bürgeramt appointment early — early-month slots fill fast.",x:"Bring passports/IDs (both), the signed Wohnungsgeberbestätigung and the Meldeschein. The lease alone isn't enough. Silvia, as a German citizen from Rosenheim, just needs her German ID. Keep the Meldebescheinigung — you'll need it everywhere next."},
+  {who:"both",cat:"dog",badge:"2 weeks",t:"Register the dog in Rosenheim",s:"Hundesteuer at the Sachgebiet Steuern. €60/yr.",x:"Separate from the Bürgeramt — Königstraße 24, Rathaus Zi. 007, or by email to steuern@rosenheim.de. The dog has its EU pet passport + microchip already, so this is just the local tax registration."},
+  {who:"you",cat:"tax",t:"Get your Steuer-ID",s:"Arrives by post after the Anmeldung → give to Hero TCG.",x:"Needed for correct payroll/tax class. Silvia, being German, almost certainly already has one."},
+  {who:"you",cat:"ins",t:"German health insurance",s:"Join the statutory scheme; tell Hero TCG your Krankenkasse.",x:"Employment automatically puts you in the gesetzliche Krankenversicherung — pick a Krankenkasse and give it to HR."},
+  {who:"silvia",cat:"tax",t:"Get the Ansässigkeitsbescheinigung",s:"From the Rosenheim Finanzamt → give to the AT employer.",x:"This residence certificate is what makes Austria stop withholding wage tax. The employer only stops once they've received it, so do this promptly after the Anmeldung."},
+  {who:"silvia",cat:"tax",t:"Register at the German tax office",s:"Set up quarterly income-tax prepayments.",x:"Because the Austrian salary arrives with no German tax withheld at source, the Finanzamt sets quarterly prepayments based on a Verdienstbescheinigung. Have the expected tax estimated by an adviser so the first quarter doesn't surprise your cash-flow."},
+  {who:"silvia",cat:"ins",badge:"by ~31 Dec",t:"Choose health insurance route",s:"Stay with ÖGK or switch to a German Krankenkasse.",x:"As a frontier worker you have a 3-month option right. Either way you stay insured via Austria; this just decides which fund administers it."},
+  {who:"silvia",cat:"ins",t:"Request form PD S1 from ÖGK",s:"Hand it to a German Krankenkasse.",x:"The S1 registers your Austrian cover in Germany so you get a German health card and can be treated in Rosenheim, with costs billed back to the Austrian insurer. You're covered in both countries."},
+  {who:"you",cat:"bank",t:"Finish opening the German bank account",s:"If not done in Phase 1.",x:"With the Meldebescheinigung + contract you can open a traditional account now. Give the IBAN to Hero TCG."}
+]},
+{num:"Phase 5",when:"Oct → Dec",sub:"settling in",tasks:[
+  {who:"you",cat:"admin",badge:"by ~30 Dec",t:"Update AIRE (FAST-IT)",s:"Change consular district to Munich.",w:"Since 2024 there's a €200–1,000/year fine for not updating.",x:"Do it on the FAST-IT portal with your German Meldebescheinigung, within ~90 days of the move. Silvia, a German citizen, has no AIRE obligation."},
+  {who:"both",cat:"auto",t:"Finish the car re-registration",s:"Complete German plates if not done already."},
+  {who:"you",cat:"bank",t:"Close the Austrian account",s:"Only after final salary, settlements and tax refund.",x:"Check no direct debits are still attached (life insurance, leftovers). Silvia keeps hers — her salary goes there."},
+  {who:"both",cat:"home",t:"Follow up on the deposit (€3,000)",s:"Chase the refund if it hasn't arrived.",x:"The landlord typically has ~6 months to return the Kaution minus justified deductions. Follow up in writing referencing the hand-over protocol; the Arbeiterkammer or Mietervereinigung can advise if withheld unreasonably."},
+  {who:"both",cat:"admin",t:"Update addresses & direct debits",s:"Insurance, subscriptions, any Italian bank."}
+]},
+{num:"Phase 6",when:"Next year",sub:"tax wrap-up",tasks:[
+  {who:"you",cat:"tax",t:"File the Austrian return (ANV)",s:"For 1 Jan → Wegzug. Often a refund.",x:"The Arbeitnehmerveranlagung for the part-year often produces a refund. Keep your L16 and KTM payslips ready."},
+  {who:"silvia",cat:"tax",t:"File Silvia's German return",s:"Declare the Austrian income in Germany.",x:"It's already covered by the quarterly prepayments; thanks to the exemption, Austria doesn't tax that employment income."},
+  {who:"both",cat:"tax",t:"File the German return",s:"You: Hero TCG income. Silvia: frontier-worker income.",x:"Einkommensteuererklärung for the period as German residents."},
+  {who:"both",cat:"admin",t:"Archive all documents",s:"Keep everything that proves the split.",x:"Abmeldebestätigung, Meldebescheinigung, L16, contracts and the S1 — your evidence of residence and tax regime if either tax office asks."}
+]}];
+
+const K="reloc_at_de_v10",KID="reloc_identity";
+let state,me,filter="all",catFilter=null,allOpen=false;
+
+function load(){try{return JSON.parse(localStorage.getItem(K))||{};}catch{return{};}}
+function save(){try{localStorage.setItem(K,JSON.stringify(state));}catch{}schedulePush();}
+function loadId(){try{return localStorage.getItem(KID);}catch{return null;}}
+function saveId(n){try{localStorage.setItem(KID,n);}catch{}}
+function timeAgo(ts){const s=Math.floor((Date.now()-ts)/1000);if(s<10)return"now";if(s<60)return s+"s";const m=Math.floor(s/60);if(m<60)return m+"m";const h=Math.floor(m/60);if(h<24)return h+"h";const d=Math.floor(h/24);return d===1?"1d":d+"d";}
+
+function pickMe(name){me=name;saveId(name);document.getElementById("pick").style.display="none";updateBadge();}
+function changeIdentity(){me=me==="You"?"Silvia":"You";saveId(me);updateBadge();refresh();}
+function updateBadge(){const b=document.getElementById("idbadge");b.textContent=me==="Silvia"?"SILVIA":"YOU";b.style.background=me==="Silvia"?"var(--ss)":"var(--ys)";b.style.color=me==="Silvia"?"var(--s)":"var(--y)";}
+
+function vis(who){return filter==="all"||who==="both"||who===filter;}
+function catVis(cat){return !catFilter||cat===catFilter;}
+const CHK='<svg viewBox="0 0 24 24"><path d="M4 12l5 5L20 6"/></svg>';
+
+const catsEl=document.getElementById("cats");
+Object.entries(CATS).forEach(([k,v])=>{
+  const t=document.createElement("span");t.className="cat-tag";t.dataset.cat=k;t.textContent=v.l;
+  t.style.background=v.bg;t.style.color=v.fg;
+  t.addEventListener("click",()=>{catFilter=catFilter===k?null:k;document.querySelectorAll(".cat-tag").forEach(c=>c.classList.toggle("on",c.dataset.cat===catFilter));refresh();});
+  catsEl.appendChild(t);
+});
+
+const main=document.getElementById("main");
+DATA.forEach((ph,pi)=>{
+  const sec=document.createElement("div");sec.className="ph";sec.dataset.pi=pi;
+  sec.appendChild(Object.assign(document.createElement("div"),{className:"nd"}));
+  const hd=document.createElement("button");hd.className="phd";
+  hd.innerHTML=`<div style="flex:1"><div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.14em;color:var(--ac);text-transform:uppercase">${ph.num}</div><div style="font-family:Fraunces,serif;font-weight:500;font-size:15px;line-height:1.15">${ph.when}<span style="display:block;font-family:Inter;font-weight:400;font-size:11px;color:var(--is)">${ph.sub}</span></div></div><span style="font-family:'Space Mono',monospace;font-size:11px;color:var(--is)" data-cnt></span><svg width="12" viewBox="0 0 24 24" fill="none" stroke="var(--is)" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>`;
+  sec.appendChild(hd);
+  const bd=document.createElement("div");bd.className="bd";
+  const inn=document.createElement("div");inn.style.padding="2px 0 8px";bd.appendChild(inn);
+  ph.tasks.forEach((t,ti)=>{
+    if(t.g){const g=document.createElement("div");g.className="gl";g.dataset.who=t.who||"both";g.textContent=t.g;inn.appendChild(g);return;}
+    const id=`${ph.num}-${ti}`,who=t.who||"both",cat=t.cat||"";
+    const row=document.createElement("div");
+    row.className="tk"+(t.fg?" fg":"");row.dataset.id=id;row.dataset.who=who;row.dataset.cat=cat;
+    const pill=who!=="both"?`<span class="pl ${who==='you'?'u':'sv'}">${who==='you'?'You':'Silvia'}</span>`:"";
+    const catPill=cat&&CATS[cat]?`<span class="ct" style="background:${CATS[cat].bg};color:${CATS[cat].fg}">${CATS[cat].l}</span>`:"";
+    const badge=t.badge?`<span class="bdg" style="background:${t.now?'var(--urs)':'var(--als)'};color:${t.now?'var(--ur)':'var(--al)'}">${t.badge}</span>`:"";
+    const hasDet=t.s||t.w||t.x;
+    const caret=hasDet?`<svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg>`:`<span style="flex:0 0 16px"></span>`;
+    let det="";
+    if(hasDet){
+      det=`<div class="det"><div class="det-in">`;
+      if(t.s)det+=`<p><span class="lbl">Do</span>${t.s}</p>`;
+      if(t.w)det+=`<p class="warn"><span class="lbl">Watch out</span>▲ ${t.w}</p>`;
+      if(t.x)det+=`<div class="insight"><span class="lbl">Insight</span>${t.x}</div>`;
+      det+=`</div></div>`;
+    }
+    row.innerHTML=`<div class="tkrow"><div class="bx" data-box>${CHK}</div><div class="tmid" data-mid><div class="ttl">${t.t}</div><div class="tags">${pill}${catPill}${badge}<span class="chk" data-chk style="display:none"></span></div></div>${caret}</div>${det}`;
+    row.querySelector("[data-box]").addEventListener("click",e=>{e.stopPropagation();if(state[id])delete state[id];else state[id]={by:me,at:Date.now()};save();applyTask(row,id);refresh();});
+    if(hasDet){const open=()=>row.classList.toggle("open");row.querySelector("[data-mid]").addEventListener("click",open);row.querySelector(".caret").addEventListener("click",open);}
+    inn.appendChild(row);
+  });
+  sec.appendChild(bd);
+  hd.addEventListener("click",()=>sec.classList.toggle("col"));
+  main.appendChild(sec);
+});
+
+function applyTask(row,id){
+  const e=state[id],done=!!e;
+  row.classList.toggle("dn",done);
+  const chk=row.querySelector("[data-chk]");
+  if(done&&e.by){const c=e.by==="Silvia"?"var(--s)":"var(--y)";chk.style.display="inline-flex";chk.style.color=c;chk.innerHTML=`<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M4 12l5 5L20 6"/></svg> ${e.by} · ${e.at?timeAgo(e.at):""}`;}
+  else chk.style.display="none";
+}
+
+function refresh(){
+  document.querySelectorAll(".gl").forEach(g=>g.classList.toggle("hid",!vis(g.dataset.who)));
+  document.querySelectorAll(".tk").forEach(r=>{r.classList.toggle("hid",!vis(r.dataset.who)||!catVis(r.dataset.cat));applyTask(r,r.dataset.id);});
+  let total=0,done=0;
+  document.querySelectorAll(".ph").forEach(sec=>{
+    const rows=[...sec.querySelectorAll(".tk")].filter(r=>!r.classList.contains("hid"));
+    const d=rows.filter(r=>r.classList.contains("dn")).length;
+    total+=rows.length;done+=d;
+    sec.querySelector("[data-cnt]").textContent=rows.length?`${d}/${rows.length}`:"";
+    sec.classList.toggle("done",d===rows.length&&rows.length>0);
+    sec.classList.toggle("hid",rows.length===0);
+  });
+  const pct=total?Math.round(done/total*100):0;
+  document.getElementById("fl").style.width=pct+"%";document.getElementById("pct").textContent=pct+"%";
+  document.getElementById("status").textContent=pct===100?"All done — welcome to Rosenheim!":done>0?`${done} of ${total} steps`:"";
+  updateActivity();
+}
+
+function updateActivity(){
+  const entries=Object.entries(state).filter(([,v])=>v&&v.at).sort((a,b)=>b[1].at-a[1].at).slice(0,10);
+  document.getElementById("alog").style.display=entries.length?"":"none";
+  document.getElementById("acount").textContent=entries.length;
+  document.getElementById("arows").innerHTML=entries.map(([id,v])=>{
+    const title=DATA.reduce((a,ph)=>{const ti=parseInt(id.split("-").pop());if(id.startsWith(ph.num)){const t=ph.tasks[ti];if(t&&!t.g)return t.t;}return a;},"?");
+    const c=v.by==="Silvia"?"var(--s)":"var(--y)";
+    return`<div class="row"><span style="width:7px;height:7px;border-radius:4px;background:${c};flex:0 0 7px"></span><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><b style="color:${c}">${v.by}</b> ${title}</span><span style="font-family:'Space Mono',monospace;font-size:9px;color:var(--is)">${v.at?timeAgo(v.at):""}</span></div>`;
+  }).join("");
+}
+function toggleLog(){const r=document.getElementById("arows");r.style.display=r.style.display==="none"?"":"none";}
+function toggleAll(){allOpen=!allOpen;document.querySelectorAll(".tk").forEach(r=>{if(r.querySelector(".det"))r.classList.toggle("open",allOpen);});document.getElementById("expandAll").textContent=allOpen?"Collapse all":"Expand all";}
+
+/* ─── CLOUD SYNC (Google Sheets Web App) ─── */
+const URLK="reloc_sync_url";
+const SYNC_KEY="rosenheim2026"; // must match SECRET in the Apps Script
+function keyed(u){return u+(u.indexOf("?")<0?"?":"&")+"key="+encodeURIComponent(SYNC_KEY);}
+let syncUrl=null, lastPush=0, pulling=false;
+
+function setDot(txt,col){const d=document.getElementById("syncDot");d.textContent=txt;d.style.color=col||"var(--is)";}
+function toggleSync(){const a=document.getElementById("syncArea");a.style.display=a.style.display==="none"?"flex":"none";if(syncUrl)document.getElementById("urlInput").value=syncUrl;}
+async function connectSync(){
+  const v=document.getElementById("urlInput").value.trim();
+  if(!v){setDot("paste a URL first","var(--ur)");return;}
+  if(!v.startsWith("https://script.google.com")){
+    setDot("URL must start with https://script.google.com","var(--ur)");return;
+  }
+  if(!v.endsWith("/exec")){
+    setDot("URL must end with /exec (not /dev)","var(--ur)");return;
+  }
+  setDot("testing…");
+  try{
+    const r=await fetch(keyed(v),{method:"GET"});
+    const j=await r.json();
+    if(j&&j.ok){
+      syncUrl=v;try{localStorage.setItem(URLK,v);}catch{}
+      applyBundle(j.data);
+      document.getElementById("syncArea").style.display="none";
+      setDot("synced ✓","var(--ac)");
+      push(); // push our current state up so the sheet isn't empty
+    }else{
+      setDot("connected but bad response — re-check Step 3","var(--ur)");
+    }
+  }catch(err){
+    setDot("can't reach URL — see note below","var(--ur)");
+    alert("Couldn't reach the URL.\n\nMost common causes:\n1) You're testing inside the Claude preview — fetch to Google is blocked here. DOWNLOAD the .html file and open it in a normal browser tab (Safari/Chrome).\n2) Deployment isn't public: in Apps Script, Deploy → Manage deployments → Who has access = Anyone.\n3) URL must end in /exec.\n\nError: "+err);
+  }
+}
+
+function bundle(){return{c:state,u:umzug};}
+let applying=false;
+function applyBundle(raw){
+  if(!raw)return;
+  applying=true;
+  const imp=raw.c||{};
+  Object.entries(imp).forEach(([k,v])=>{if(!state[k]||(v&&v.at&&(!state[k].at||v.at>state[k].at))){state[k]=v;}});
+  if(raw.u){umzug=raw.u;try{localStorage.setItem(UZK,JSON.stringify(umzug));}catch{}if(!document.getElementById("page-umzug").classList.contains("hide"))renderUmzug();}
+  try{localStorage.setItem(K,JSON.stringify(state));}catch{}
+  refresh();
+  applying=false;
+}
+
+async function pull(force){
+  if(!syncUrl||pulling)return;
+  if(!force&&Date.now()-lastPush<8000)return; // don't fight a fresh local change
+  pulling=true;
+  try{
+    const r=await fetch(keyed(syncUrl),{method:"GET"});
+    const j=await r.json();
+    if(j&&j.ok){applyBundle(j.data);setDot("synced ✓","var(--ac)");}
+    else setDot("sync error","var(--ur)");
+  }catch{setDot("offline","var(--ur)");}
+  pulling=false;
+}
+
+async function push(){
+  if(!syncUrl)return;
+  lastPush=Date.now();
+  setDot("saving…");
+  try{
+    await fetch(syncUrl,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({key:SYNC_KEY,data:bundle()})});
+    setDot("synced ✓","var(--ac)");
+  }catch{setDot("save failed","var(--ur)");}
+}
+
+document.getElementById("seg").addEventListener("click",e=>{if(!e.target.dataset.f)return;filter=e.target.dataset.f;document.querySelectorAll("#seg button").forEach(b=>b.classList.toggle("on",b.dataset.f===filter));refresh();});
+function doReset(){if(!confirm("Reset all progress?"))return;state={};save();refresh();}
+
+/* ─── UMZUG PAGE ─── */
+const UZK="reloc_umzug_v1";
+const UZ_SECTIONS=[
+  {id:"take",label:"Take to Germany",ic:"🚚",fg:"#1B6B4A",bg:"#D6EDE2"},
+  {id:"sell",label:"Sell before moving",ic:"💶",fg:"#8B6914",bg:"#F5EDD6"},
+  {id:"buy",label:"Buy new (Germany)",ic:"🛒",fg:"#2F5080",bg:"#DEE5F1"}
+];
+const UZ_DEFAULT={
+  take:[{n:"Sofa"},{n:"Dining table + chairs"},{n:"Bed + mattress"},{n:"Wardrobe"},{n:"Bookshelves"},{n:"Washing machine"},{n:"TV + stand"},{n:"Kitchen utensils & crockery"},{n:"Dog bed & supplies"}],
+  sell:[{n:"Old desk"},{n:"Spare cabinet"},{n:"Items that won't fit the van"}],
+  buy:[{n:"IKEA kitchen — base cabinets"},{n:"IKEA kitchen — wall cabinets"},{n:"IKEA kitchen — worktop"},{n:"IKEA kitchen — sink + tap"},{n:"IKEA kitchen — appliances (oven/hob)"},{n:"Tumble dryer"},{n:"New wardrobe (if needed)"},{n:"Curtains / blinds"}]
+};
+let umzug;
+function uzLoad(){try{const d=JSON.parse(localStorage.getItem(UZK));if(d&&d.take)return d;}catch{}return JSON.parse(JSON.stringify(UZ_DEFAULT));}
+function uzSave(){try{localStorage.setItem(UZK,JSON.stringify(umzug));}catch{}schedulePush();}
+
+function renderUmzug(){
+  const root=document.getElementById("umzug");
+  root.innerHTML="";
+  UZ_SECTIONS.forEach(sec=>{
+    const items=umzug[sec.id]||[];
+    const done=items.filter(i=>i.d).length;
+    const wrap=document.createElement("div");wrap.className="uz-sec";
+    wrap.innerHTML=`<div class="uz-h"><div class="ic" style="background:${sec.bg};color:${sec.fg}">${sec.ic}</div><h3>${sec.label}</h3><span class="cnt">${done}/${items.length}</span></div>`;
+    items.forEach((it,idx)=>{
+      const li=document.createElement("div");li.className="uz-li"+(it.d?" dn":"");
+      li.innerHTML=`<div class="ck" data-ck>${CHK}</div><div class="nm">${it.n}</div><button class="del" data-del title="Remove">×</button>`;
+      li.querySelector("[data-ck]").addEventListener("click",()=>{it.d=!it.d;uzSave();renderUmzug();});
+      li.querySelector("[data-del]").addEventListener("click",()=>{umzug[sec.id].splice(idx,1);uzSave();renderUmzug();});
+      wrap.appendChild(li);
+    });
+    const add=document.createElement("div");add.className="uz-add";
+    add.innerHTML=`<input placeholder="Add item to ${sec.label}…"/><button>Add</button>`;
+    const inp=add.querySelector("input"),btn=add.querySelector("button");
+    const doAdd=()=>{const v=inp.value.trim();if(!v)return;umzug[sec.id].push({n:v});uzSave();renderUmzug();};
+    btn.addEventListener("click",doAdd);
+    inp.addEventListener("keydown",e=>{if(e.key==="Enter")doAdd();});
+    wrap.appendChild(add);
+    root.appendChild(wrap);
+  });
+}
+
+function showPage(p){
+  document.getElementById("page-checklist").classList.toggle("hide",p!=="checklist");
+  document.getElementById("page-umzug").classList.toggle("hide",p!=="umzug");
+  document.querySelectorAll(".pagenav button").forEach(b=>b.classList.toggle("on",b.dataset.page===p));
+  if(p==="umzug")renderUmzug();
+}
+
+/* ─── INIT ─── */
+let pushTimer=null;
+function schedulePush(){if(!syncUrl||applying)return;clearTimeout(pushTimer);pushTimer=setTimeout(push,800);}
+
+state=load();
+umzug=uzLoad();
+const DEFAULT_SYNC_URL="https://script.google.com/macros/s/AKfycbxN0BPZzaiMAFtoCg7jhfZOneidoI2t7PhjF1rntkKcqb3cdF7tqA0BTyX6Ev19rxiN/exec";
+try{syncUrl=localStorage.getItem(URLK)||DEFAULT_SYNC_URL;}catch{syncUrl=DEFAULT_SYNC_URL;}
+const savedId=loadId();
+if(savedId){me=savedId;document.getElementById("pick").style.display="none";updateBadge();}
+refresh();
+if(syncUrl){setDot("connecting…");pull(true);}
+// poll the cloud for the other person's changes
+setInterval(()=>{if(syncUrl)pull(false);},10000);
+setInterval(()=>{document.querySelectorAll("[data-chk]").forEach(el=>{if(el.style.display!=="none"){const id=el.closest(".tk").dataset.id,e=state[id];if(e&&e.by&&e.at)el.innerHTML=`<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M4 12l5 5L20 6"/></svg> ${e.by} · ${timeAgo(e.at)}`;}});updateActivity();},30000);
+</script>
+</body>
+</html>
